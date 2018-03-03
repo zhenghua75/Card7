@@ -79,13 +79,13 @@ Public Function SetDate(ByVal strDateWeekTime As String) As String
         SetDate = RFINITERR '设备初始化端口失败
         Exit Function
     End If
-    
+
     st = rf_settimehex(icdev, strDateWeekTime)
     If st <> 0 Then
         SetDate = RFSETTIMEERR '设置时间失败
         Exit Function
     End If
-    
+
     st = rf_disp_mode(icdev, &H1)
     If st <> 0 Then
         SetDate = RFSETDISPMODE '设置显示模式失败
@@ -123,7 +123,7 @@ Private Function InitCard() As String
         InitCard = RFANTICOLLERR '卡防冲突，返回卡的序列号
         Exit Function
     End If
-            
+
     st = rf_select(icdev, Snr, Size)
     If st <> 0 Then
         InitCard = RFSELECTERR '从多个卡中选取一个给定序列号的卡
@@ -133,12 +133,12 @@ Private Function InitCard() As String
 End Function
 Private Function CheckA()
     '装载密码A
-    akey(0) = &HB6
-    akey(1) = &H48
-    akey(2) = &HA7
-    akey(3) = &HF3
-    akey(4) = &H2
-    akey(5) = &H1C
+    akey(0) = &H0
+    akey(1) = &H1
+    akey(2) = &H2
+    akey(3) = &H3
+    akey(4) = &H4
+    akey(5) = &H5
     loadmode = 0
     sector = 1
     st = rf_load_key(ByVal icdev, loadmode, sector, akey(0))
@@ -156,12 +156,12 @@ Private Function CheckA()
 End Function
 Private Function CheckB()
 '装载B密码
-    bkey(0) = &HC0
-    bkey(1) = &H3F
-    bkey(2) = &H55
-    bkey(3) = &H91
-    bkey(4) = &HEB
-    bkey(5) = &H8
+    bkey(0) = &H0
+    bkey(1) = &H1
+    bkey(2) = &H2
+    bkey(3) = &H3
+    bkey(4) = &H4
+    bkey(5) = &H5
     loadmode = 4
     sector = 1
     st = rf_load_key(ByVal icdev, loadmode, sector, bkey(0))
@@ -252,19 +252,19 @@ Public Function PutCard(ByVal strCardNo As String, ByVal dCharge As Double, ByVa
         PutCard = RFCARDIDLENGTH7 '卡号位数要求
         GoTo Err
     End If
-    
+
     ret = InitCard()
     If ret <> RFOK Then
         PutCard = ret
         GoTo Err
     End If
     '装载密码A
-    akey(0) = &HA3
-    akey(1) = &HD4
-    akey(2) = &HC6
-    akey(3) = &H8C
-    akey(4) = &HD9
-    akey(5) = &HE5
+    akey(0) = &H0
+    akey(1) = &H1
+    akey(2) = &H2
+    akey(3) = &H3
+    akey(4) = &H4
+    akey(5) = &H5
     loadmode = 0
     sector = 1
     st = rf_load_key(ByVal icdev, loadmode, sector, akey(0))
@@ -278,7 +278,7 @@ Public Function PutCard(ByVal strCardNo As String, ByVal dCharge As Double, ByVa
         PutCard = RFAUTHENTICATION_A_ERR 'A密码验证错误
         GoTo Err
     End If
-    
+
     ret = WriteCardNo(ByVal strCardNo)
     If ret <> RFOK Then
         PutCard = ret
@@ -296,26 +296,26 @@ Public Function PutCard(ByVal strCardNo As String, ByVal dCharge As Double, ByVa
     End If
 
     '改密码
-    akey(0) = &HB6
-    akey(1) = &H48
-    akey(2) = &HA7
-    akey(3) = &HF3
-    akey(4) = &H2
-    akey(5) = &H1C
-    
-    bkey(0) = &HC0
-    bkey(1) = &H3F
-    bkey(2) = &H55
-    bkey(3) = &H91
-    bkey(4) = &HEB
-    bkey(5) = &H8
-    
+    akey(0) = &H0
+    akey(1) = &H2
+    akey(2) = &H3
+    akey(3) = &H4
+    akey(4) = &H5
+    akey(5) = &H6
+
+    bkey(0) = &H0
+    bkey(1) = &H1
+    bkey(2) = &H2
+    bkey(3) = &H3
+    bkey(4) = &H4
+    bkey(5) = &H5
+
     st = rf_changeb3(icdev, sector, akey(0), 3, 3, 3, 3, 0, bkey(0))
      If st <> 0 Then
         PutCard = RFCHANGEB3ERR '改密码失败
        GoTo Err
     End If
-    
+
     st = rf_beep(icdev, 5)
 
     PutCard = RFOK
@@ -354,7 +354,7 @@ Public Function WriteChargeEn(ByVal dCharge As Double, ByVal dChargeBak As Doubl
             Exit Function
         End If
     End If
-    
+
     WriteChargeEn = RFOK
 End Function
 '函数说明：
@@ -366,28 +366,28 @@ Public Function WriteCard(ByVal strCardNo As String, ByVal dCharge As Double, By
         WriteCard = ret
         GoTo Err
     End If
-    
+
     ret = CheckB()
     If ret <> RFOK Then
         WriteCard = ret
         GoTo Err
     End If
-    
+
     If Len(strCardNo) > 0 Then
         Dim strInCardNo As String
         ret = ReadCardNo(strInCardNo)
-    
+
         If st <> RFOK Then
             WriteCard = ret '读取卡号错误
             GoTo Err
         End If
-    
+
         If strCardNo <> strInCardNo Then
             WriteCard = RFCARDNOERR '卡号不匹配
             GoTo Err
         End If
     End If
-    
+
     '写积分
     If dIg > 0 Then
         ret = WriteIg(ByVal dIg)
@@ -396,7 +396,7 @@ Public Function WriteCard(ByVal strCardNo As String, ByVal dCharge As Double, By
             GoTo Err
         End If
     End If
-    
+
     If dCharge > 0 Then
         If dCharge <> dChargeBak Then
             WriteCard = RFCHARGEEQUERR
@@ -428,19 +428,19 @@ Public Function ReadCard(strCardNo As String, dCharge As Double, dIg As Long) As
         ReadCard = ret
         GoTo Err
     End If
-   
+
     ret = CheckB()
     If ret <> RFOK Then
         ReadCard = ret
         GoTo Err
     End If
-    
+
     ret = ReadCardNo(strCardNo)
     If ret <> RFOK Then
         ReadCard = ret
         GoTo Err
     End If
-    
+
     ret = ReadCharge(dCharge)
     If ret <> RFOK Then
         ReadCard = ret
@@ -453,7 +453,7 @@ Public Function ReadCard(strCardNo As String, dCharge As Double, dIg As Long) As
     End If
 
     st = rf_beep(icdev, 5)
-    
+
     ReadCard = RFOK
     '取消设备
     Call quit
@@ -471,18 +471,18 @@ Public Function EmpPutCard(ByVal strCardNo As String) As String   '发卡
      '初始化端口
     On Error GoTo Err
     ret = InitCard()
-    
+
     '装载密码A
-    akey(0) = &HA3
-    akey(1) = &HD4
-    akey(2) = &HC6
-    akey(3) = &H8C
-    akey(4) = &HD9
-    akey(5) = &HE5
-    
+    akey(0) = &H0
+    akey(1) = &H1
+    akey(2) = &H2
+    akey(3) = &H3
+    akey(4) = &H4
+    akey(5) = &H5
+
     loadmode = 0
     sector = 1
-       
+
     st = rf_load_key(ByVal icdev, loadmode, sector, akey(0))
     If st <> 0 Then
         EmpPutCard = RFLOADKEY_A_ERR '装载密码A出错
@@ -495,7 +495,7 @@ Public Function EmpPutCard(ByVal strCardNo As String) As String   '发卡
         EmpPutCard = RFAUTHENTICATION_A_ERR 'A密码验证错误
         GoTo Err
     End If
-    
+
 
     '写数据，卡号
     address = 4
@@ -505,30 +505,30 @@ Public Function EmpPutCard(ByVal strCardNo As String) As String   '发卡
         EmpPutCard = RFWRITEERR '写卡号失败"
         GoTo Err
     End If
-    
-    
+
+
     '改密码
-    
-    akey(0) = &HB6
-    akey(1) = &H48
-    akey(2) = &HA7
-    akey(3) = &HF3
-    akey(4) = &H2
-    akey(5) = &H1C
-    
-    bkey(0) = &HC0
-    bkey(1) = &H3F
-    bkey(2) = &H55
-    bkey(3) = &H91
-    bkey(4) = &HEB
-    bkey(5) = &H8
-    
+
+    akey(0) = &H0
+    akey(1) = &H1
+    akey(2) = &H2
+    akey(3) = &H3
+    akey(4) = &H4
+    akey(5) = &H5
+
+    bkey(0) = &H0
+    bkey(1) = &H1
+    bkey(2) = &H2
+    bkey(3) = &H3
+    bkey(4) = &H4
+    bkey(5) = &H5
+
     st = rf_changeb3(icdev, sector, akey(0), 3, 3, 3, 3, 0, bkey(0))
      If st <> 0 Then
         EmpPutCard = RFCHANGEB3ERR '改密码失败
         GoTo Err
     End If
-    
+
     st = rf_beep(icdev, 5)
 
     EmpPutCard = RFOK
@@ -548,18 +548,18 @@ Public Function EmpReadCard(strCardNo As String) As String    '读卡
         EmpReadCard = ret
         GoTo Err
     End If
-    
+
     address = 4
     st = rf_read_hex(ByVal icdev, address, databuff32)
     If st <> 0 Then
          EmpReadCard = RFREADERR '读取卡号错误
          GoTo Err
     End If
-    
+
     strCardNo = Right(databuff32, 4)
-    
+
     st = rf_beep(icdev, 5)
-    
+
     EmpReadCard = RFOK
     '取消设备
     Call quit
@@ -571,7 +571,7 @@ End Function
 Public Function RecycleCard() As String    '卡回收
     On Error GoTo Err
     ret = InitCard()
-    
+
     ret = CheckB()
     If ret <> RFOK Then
         RecycleCard = ret
@@ -579,27 +579,27 @@ Public Function RecycleCard() As String    '卡回收
     End If
 
 
-    akey(0) = &HA3
-    akey(1) = &HD4
-    akey(2) = &HC6
-    akey(3) = &H8C
-    akey(4) = &HD9
-    akey(5) = &HE5
+    akey(0) = &H0
+    akey(1) = &H1
+    akey(2) = &H2
+    akey(3) = &H3
+    akey(4) = &H4
+    akey(5) = &H5
 
-    bkey(0) = &HB0
-    bkey(1) = &H1B
-    bkey(2) = &H4C
-    bkey(3) = &H49
-    bkey(4) = &HA3
-    bkey(5) = &HD3
+    bkey(0) = &H0
+    bkey(1) = &H1
+    bkey(2) = &H2
+    bkey(3) = &H3
+    bkey(4) = &H4
+    bkey(5) = &H5
      st = rf_changeb3(icdev, sector, akey(0), 0, 0, 0, 1, 0, bkey(0))
      If st <> 0 Then
         RecycleCard = RFCHANGEB3ERR '改密码失败
         GoTo Err
     End If
-   
+
     st = rf_beep(icdev, 5)
-    
+
     RecycleCard = RFOK
     '取消设备
     Call quit
